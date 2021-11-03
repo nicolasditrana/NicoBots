@@ -19,6 +19,7 @@ public class AnalizePostText {
     private static WebDriver driver;
     private static ArrayList<BOPost> xResults;
     private static Properties properties;
+    private static boolean reloaded;
 
     //Mejoras: que calcule cuando se publico y lo valide con una propiedad
 
@@ -30,7 +31,7 @@ public class AnalizePostText {
             driver.get("https://www.linkedin.com/feed/");
 
             login();
-            changeToMoreRecent();
+            changeByMoreRecent();
 
             execute();
         } catch (Exception e) {
@@ -52,6 +53,8 @@ public class AnalizePostText {
         }
         driver = new ChromeDriver();
         driver.manage().window().maximize();
+
+        reloaded = false;
     }
 
     public static void login() throws Exception {
@@ -72,8 +75,11 @@ public class AnalizePostText {
         Thread.sleep(1500);
     }
 
-    private static void changeToMoreRecent() throws Exception {
-        changeToMoreRecent(false);
+    private static void changeByMoreRecent() throws Exception {
+        Boolean searchByMoreRecent = Boolean.parseBoolean((String) properties.get("searchByMoreRecent"));
+        if (searchByMoreRecent) {
+            changeToMoreRecent(false);
+        }
     }
 
     private static void changeToMoreRecent(boolean retry) throws Exception {
@@ -104,13 +110,11 @@ public class AnalizePostText {
             try {
                 //Leo la lista de posteos en pantalla
                 xList = driver.findElement(By.id("main")).findElements(By.xpath("//*[@class='break-words']"));
-                boolean execute = false;
                 for (WebElement xElement : xList) {
-                    execute = processAnElement(xIds, xElement);
+                    processAnElement(xIds, xElement);
                 }
-                if (execute) {
-                    afterAnalyze(errors);
-                }
+                afterAnalyze(errors);
+
             } catch (Exception e) {
                 //Si los errores suman la cantidad de posteos a revisar, frena
                 errors++;
@@ -118,7 +122,7 @@ public class AnalizePostText {
         }
     }
 
-    private static boolean processAnElement(Map<String, String> xIds, WebElement xElement) {
+    private static void processAnElement(Map<String, String> xIds, WebElement xElement) {
 
         //Para cada posteo consulto si no lo lei
         String xIdElement = ((RemoteWebElement) xElement).getId();
@@ -146,12 +150,30 @@ public class AnalizePostText {
 
                 searchActorInfo(xBOPost, xElement);
 
-                System.out.println(xBOPost.toString());
-                xResults.add(xBOPost);
-                return true;
+                save(xBOPost);
             }
         }
-        return false;
+    }
+
+    private static void save(BOPost xBOPost) {
+        boolean exist = false;
+
+        // Si se recargo la pagina valido no estar volviendo a guardar el mismo posteo
+        if (!reloaded) {
+            xResults.add(xBOPost);
+            System.out.println(xBOPost.toString());
+        } else {
+            for (BOPost post : xResults) {
+                if (post.equals(xBOPost)) {
+                    exist = true;
+                    break;
+                }
+            }
+            if (!exist) {
+                xResults.add(xBOPost);
+                System.out.println(xBOPost.toString());
+            }
+        }
     }
 
     private static Integer analyzeText(String xText) {
@@ -214,6 +236,8 @@ public class AnalizePostText {
                 Boolean addNewPeople = Boolean.parseBoolean((String) properties.get("addNewPeople"));
                 if (addNewPeople) {
                     connectWithNewPeople(xActorContainer, href, xBOPost);
+                } else {
+                    xBOPost.setIsConnect(BOPost.NOT_AGGREGATE);
                 }
             }
         } catch (Exception e) {
@@ -315,12 +339,23 @@ public class AnalizePostText {
         } catch (Exception e) {
         }
 
-        //Si llego al final de los posteos, agrega más
+        seeNewPost();
+    }
+
+    private static void seeNewPost() throws Exception {
+
+
+        //Si llego al final de los posteos, presiona el boton ver nuevas (lo que actualiza la pagina)
+        WebElement xNewPostButton = null;
         try {
-            driver.findElement(By.id("main")).findElement(By.xpath("//button[text() ='Ver publicaciones nuevas']")).click();
+            xNewPostButton = driver.findElement(By.id("main")).findElement(By.xpath("//button[text() ='Ver nuevas publicaciones']"));
+            xNewPostButton.click();
+            reloaded = true;
         } catch (Exception e) {
             try {
-                driver.findElement(By.id("main")).findElement(By.xpath("//button[text() ='See new posts']")).click();
+                xNewPostButton = driver.findElement(By.id("main")).findElement(By.xpath("//button[text() ='See new posts']"));
+                xNewPostButton.click();
+                reloaded = true;
             } catch (Exception i) {
             }
         }

@@ -1,5 +1,7 @@
 package com.selenium.common.linkedin.BO;
 
+import java.util.Objects;
+
 public class BOPost {
 
     private Integer score;
@@ -57,7 +59,24 @@ public class BOPost {
         this.isConnect = isConnect;
     }
 
-    public String toString(){
+    public String toString() {
         return "" + this.getScore() + "." + this.getPerfilName() + " - " + this.getIsConnect() + " - " + this.getUrl();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        BOPost boPost = (BOPost) o;
+        return Objects.equals(score, boPost.score) && Objects.equals(perfilName, boPost.perfilName) && Objects.equals(url, boPost.url) && Objects.equals(text, boPost.text);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(score, perfilName, url, text);
     }
 }
