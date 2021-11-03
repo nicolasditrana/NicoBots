@@ -34,4 +34,11 @@ El bot realiza las siguientes acciones:
     - Profile: Con el link al perfil del usuario
     - Post: Con el texto del posteo analizado
 
-Importante: El bot funciona si esta el LinkedIn en Español o en Ingles
+Importante:
+- El bot funciona si esta el LinkedIn en Español o en Ingles
+- Se debe usar un driver compatible con su version de Chrome, puede encontrar la que les corresponda en el siguiente enlace: https://chromedriver.chromium.org/downloads
+
+En un futuro tal vez agregue nuevas funcionalidades como que te envie un mail, que se pueda ejecutar en Firefox, que solo procese posteos a partir de una fecha, etc.
+
+
+Saludos!
