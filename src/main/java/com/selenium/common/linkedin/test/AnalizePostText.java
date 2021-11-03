@@ -49,7 +49,7 @@ public class AnalizePostText {
         properties.load(new FileInputStream(new File("src/main/resources/application.properties")));
 
         if (System.getProperty("webdriver.chrome.driver") == null) {
-            System.setProperty("webdriver.chrome.driver", (String) properties.get("URLDriver"));
+            System.setProperty("webdriver.chrome.driver", (String) properties.get("urlDriver"));
         }
         driver = new ChromeDriver();
         driver.manage().window().maximize();
